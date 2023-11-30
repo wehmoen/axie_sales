@@ -6,9 +6,9 @@ import cors from "cors";
 import morgan from "morgan";
 
 const app = express();
+app.set("trust proxy", true);
 app.use(cors());
 app.use(morgan("combined"));
-
 app.get('/logs/:from/:to', async (req, res) => {
     const {from, to} = req.params;
     let fromBlock, toBlock;
