@@ -4,15 +4,20 @@ const client = new CoinGeckoClient({
     autoRetry: true,
 });
 
-export async function getAxiePriceInUSD() {
-
-    const result: SimplePriceResponse = await client.simplePrice({
-        ids: 'axie-infinity',
+export async function EthToUSD(eth: string): Promise<string> {
+    const price: SimplePriceResponse = await client.simplePrice({
+        ids: 'ethereum',
         vs_currencies: 'usd',
     });
-    return result['axie-infinity']['usd'];
+
+    const ethBigInt = BigInt(eth) * 100n;
+    const ethPriceInUsd = BigInt(price["ethereum"]["usd"] * 100);
+
+    // Calculate the total value in USD (as BigInt for precision)
+    const totalInUsdBigInt = (ethBigInt * ethPriceInUsd) / BigInt(10 ** 18);
+
+
+
+    // Convert BigInt to string for formatting
+    return (Number(totalInUsdBigInt) / 10000).toFixed(2);
 }
-
-const p = await getAxiePriceInUSD();
-
-console.log(p);

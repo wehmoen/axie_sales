@@ -2,12 +2,14 @@ import {axieTokenAddress, marketplaceAddress, marketplaceSaleTopic, orderExchang
 import {Axie, AxieMetadata, SkyMavisApi} from "./axie.js";
 import {config} from "./config.js";
 import {Log} from "ethers";
+import {EthToUSD} from "./gecko.js";
 
 export type Sale = {
     timestamp: number
     seller: string
     buyer: string
     priceEth: bigint
+    priceUsd?: string
     tokenId: bigint
     transactionHash: string
     metadata?: AxieMetadata
@@ -43,6 +45,7 @@ export async function parseLogs(logs: Log[]): Promise<Sale[]> {
                         seller: data.args[0][0][0],
                         buyer: data.args[3],
                         priceEth: data.args[0][1],
+                        priceUsd: await EthToUSD(data.args[0][1].toString()),
                         tokenId: data.args[0][0][2][0][2],
                         transactionHash: log.transactionHash,
                         metadata: await axie.getMetadata()
