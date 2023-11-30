@@ -2,8 +2,12 @@ import express from 'express';
 import {ethers} from "ethers";
 import {marketplaceAddress, marketplaceSaleTopic, provider} from "./chain.js";
 import {parseLogs} from "./market.js";
+import cors from "cors";
+import morgan from "morgan";
 
 const app = express();
+app.use(cors());
+app.use(morgan("combined"));
 
 app.get('/logs/:from/:to', async (req, res) => {
     const {from, to} = req.params;
