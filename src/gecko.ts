@@ -1,23 +1,27 @@
-import {CoinGeckoClient, SimplePriceResponse} from 'coingecko-api-v3';
+import { CoinGeckoClient, SimplePriceResponse } from 'coingecko-api-v3';
+
 const client = new CoinGeckoClient({
     timeout: 10000,
     autoRetry: true,
 });
 
-export async function EthToUSD(eth: string): Promise<string> {
-    const price: SimplePriceResponse = await client.simplePrice({
-        ids: 'ethereum',
-        vs_currencies: 'usd',
-    });
+let lastUpdated = 0;
+let ethPriceInUsd = 0;
 
-    const ethBigInt = BigInt(eth) * 100n;
-    const ethPriceInUsd = BigInt(price["ethereum"]["usd"] * 100);
+async function updateEthPrice() {
+    if (Date.now() - lastUpdated > 60 * 1000) { // Update price every minute
+        const price: SimplePriceResponse = await client.simplePrice({
+            ids: 'ethereum',
+            vs_currencies: 'usd',
+        });
+        ethPriceInUsd = price.ethereum.usd;
+        lastUpdated = Date.now();
+    }
+}
 
-    // Calculate the total value in USD (as BigInt for precision)
-    const totalInUsdBigInt = (ethBigInt * ethPriceInUsd) / BigInt(10 ** 18);
-
-
-
-    // Convert BigInt to string for formatting
-    return (Number(totalInUsdBigInt) / 10000).toFixed(2);
+export async function EthToUSD(eth: bigint): Promise<string> {
+    await updateEthPrice(); // Ensure the price is up-to-date
+    const ethAmount = Number(eth) / 1e18; // Convert from wei to ETH
+    const totalInUsd = ethAmount * ethPriceInUsd; // Calculate total in USD
+    return totalInUsd.toFixed(2); // Convert to a string with 2 decimal places
 }
